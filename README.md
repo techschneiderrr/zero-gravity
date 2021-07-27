@@ -1,3 +1,5 @@
+# I made this app for a marrige photography company "Zer0-gravity" where client can check their order or product details status. This app is focussed to fetch the data from 3 google-sheets containing multiple sheets within them. After completing this project I can conclude that using google -sheets as a database never works so small bussinesses should also keep looking for some efficient alternative.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
