@@ -3,35 +3,41 @@ import "./App.css";
 
 const Tabletop = require("tabletop");
 
-function init() {
+let google_sheets = {};
+let loaded = 0;
+
+function init(publicKey, year) {
   Tabletop.init({
-    key: "https://docs.google.com/spreadsheets/d/1sjX5g6h7Wbk2HOONr8BOWIRs6GZfJcRmZpccfqDqk5c/",
+    key: publicKey,
     error: () => {
       window.location.reload();
     },
-    wanted: [
-      "Jan21",
-      "Feb21",
-      "Mar21",
-      "APR21",
-      "MAY21",
-      "JUN21",
-      "JUL21",
-      "AUG21",
-      "SEP21",
-      "Oct21",
-      "Nov21",
-      "Dec21",
-    ],
   }).then((data) => {
-    window.sheets = data;
-    document.getElementById("loader-wrapper").style.display = "none";
-    document.getElementById("wrapper").style.display = "flex";
-    createVideo();
+    google_sheets[`${year}`] = Object.fromEntries(
+      Object.entries(data).map(([k, v]) => [k.toLowerCase(), v])
+    );
+    loaded++;
+
+    if (loaded === 3) {
+      document.getElementById("loader-wrapper").style.display = "none";
+      document.getElementById("wrapper").style.display = "flex";
+      createVideo();
+    }
   });
 }
 
-init();
+init(
+  "https://docs.google.com/spreadsheets/d/1sjX5g6h7Wbk2HOONr8BOWIRs6GZfJcRmZpccfqDqk5c/",
+  21
+);
+init(
+  "https://docs.google.com/spreadsheets/d/1OVZs9LDlQS2A5cVyfBGSmqObH2DseV_erw4NJbdP3GM/",
+  20
+);
+init(
+  "https://docs.google.com/spreadsheets/d/1yDYsrO7BhvMkj6DDhsXBa0-_3k6h8BaALkOsZtOFsZI/",
+  19
+);
 
 function buildCards(objects) {
   // Resetting previous cards
@@ -62,7 +68,7 @@ function buildCards(objects) {
         let card_text = card_content.appendChild(document.createElement("p"));
         card_text.className = "card_text";
 
-        card_text.innerHTML = `<b>${label}:</b> ${object[label]}`;
+        card_text.innerHTML = `<b>${label}:</b> ${object[label] || " "}`;
       }
     }
   }
@@ -94,14 +100,12 @@ function createVideo() {
     "https://www.youtube.com/embed/CuSjVuIBV80",
     "https://www.youtube.com/embed/27NpldOjCCM",
     "https://www.youtube.com/embed/dh62rJ31B-I",
-    
   ];
 
   let responsive_iframe = document
     .getElementById("video")
     .appendChild(document.createElement("iframe"));
   responsive_iframe.className = "responsive-iframe";
-  responsive_iframe.allow="autoplay";
   responsive_iframe.title = "YouTube video";
   let video_num = Math.floor(Math.random() * videos.length);
   responsive_iframe.src = videos[video_num] + "?autoplay=1&mute=1";
@@ -111,8 +115,6 @@ function App() {
   function renderTable() {
     if (document.getElementById("video"))
       document.getElementById("video").remove();
-
-    let sheets = window.sheets;
 
     let cards = [];
     let labels = [
@@ -144,11 +146,16 @@ function App() {
     ];
 
     let cardCode = document.forms["search"]["card-code"].value;
-    let sheet = document.forms["search"]["sheet"].value;
+    let year = document.forms["search"]["year"].value;
+    let sheet = document.forms["search"]["sheet"].value + year;
+    let sheets = google_sheets[year];
 
     for (let element of sheets[sheet]["elements"]) {
       if (cardCode === "") continue;
-      if (element["Card Code Number"] === cardCode) {
+      if (
+        element["Card Code Number"] === cardCode ||
+        element["Client Number"] === cardCode
+      ) {
         let card = {};
         labels.forEach((label) => {
           card[label] = element[label];
@@ -157,7 +164,6 @@ function App() {
       }
     }
 
-    // buildAndValidateTable(labels, cards);
     buildCards(cards);
   }
 
@@ -205,8 +211,13 @@ function App() {
             renderTable();
           }}
         >
+          <select defaultValue={"21"} name="year" id="year">
+            <option value="19">2019</option>
+            <option value="20">2020</option>
+            <option value="21">2021</option>
+          </select>
           <select
-            defaultValue={"Jan21"}
+            defaultValue={"jan"}
             name="sheet"
             style={{ borderColor: "E82D96" }}
             id="sheet"
@@ -214,18 +225,18 @@ function App() {
             <option value="DEFAULT" disabled hidden>
               Month/YY
             </option>
-            <option value="Jan21">Jan21</option>
-            <option value="Feb21">Feb21</option>
-            <option value="Mar21">Mar21</option>
-            <option value="APR21">Apr21</option>
-            <option value="MAY21">May21</option>
-            <option value="JUN21">Jun21</option>
-            <option value="JUL21">Jul21</option>
-            <option value="AUG21">Aug21</option>
-            <option value="SEP21">Sep21</option>
-            <option value="Oct21">Oct21</option>
-            <option value="Nov21">Nov21</option>
-            <option value="Dec21">Dec21</option>
+            <option value="jan">Jan</option>
+            <option value="feb">Feb</option>
+            <option value="mar">Mar</option>
+            <option value="apr">Apr</option>
+            <option value="may">May</option>
+            <option value="jun">Jun</option>
+            <option value="jul">Jul</option>
+            <option value="aug">Aug</option>
+            <option value="sep">Sep</option>
+            <option value="oct">Oct</option>
+            <option value="nov">Nov</option>
+            <option value="dec">Dec</option>
           </select>
           <input type="text" name="card-code" placeholder="card code number" />
           <input

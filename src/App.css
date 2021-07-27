@@ -42,6 +42,7 @@
 }
 
 #wrapper form select {
+  margin: 5px;
   padding: 10px;
   border: 1px solid #e82d96;
   background-color: white;
